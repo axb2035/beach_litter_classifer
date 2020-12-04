@@ -28,7 +28,7 @@ class MyFrame(wx.Frame):
         self.text_ctrl = wx.TextCtrl(panel)
         my_sizer.Add(self.text_ctrl, 0, wx.ALL | wx.EXPAND, 5)
        
-        self.btn_get_file = wx.Button(panel, label='Open unclassified image')
+        self.btn_get_file = wx.Button(panel, label='Unclassified image directory')
         self.btn_get_file.Bind(wx.EVT_BUTTON, self.on_open_folder)
         
         self.btn_ignore = wx.Button(panel, label='Ignore')
@@ -64,8 +64,6 @@ class MyFrame(wx.Frame):
 
 
     def show_next_image(self, pop_image=True):
-        # Pop the current image and load from remaining unclassified images.
-        print(len(self.unclassified_files_list))
         if len(self.unclassified_files_list) > 1 :
             if pop_image:
                 self.unclassified_files.pop(0)
@@ -97,52 +95,43 @@ class MyFrame(wx.Frame):
 
 
     def on_open_folder(self, event):
-        title = "Choose a file:"
-        dlg = wx.DirDialog(self, title, 
-                            style=wx.DD_DEFAULT_STYLE)
-        # dlg = wx.FileDialog(self, title, 
-        #                    style=wx.DD_DEFAULT_STYLE)
-
+        title = "Choose a directory:"
+        dlg = wx.DirDialog(self, title, style=wx.DD_DEFAULT_STYLE)
+        
         if dlg.ShowModal() == wx.ID_OK:
             self.text_ctrl.SetValue(dlg.GetPath())
             # Get list of jpg files in dir and feed into list.            
             self.unclassified_files += [each for each in os.listdir(dlg.GetPath()) if each.endswith('.jpg')]
             for files in self.unclassified_files:
                 self.unclassified_files_list.append(str(dlg.GetPath() + "/" + files))
-            print(self.unclassified_files_list)
             
             self.show_next_image(pop_image=False)
             self.enable_buttons()            
 
         dlg.Destroy()
-        return None
 
     
     def on_flip(self, event):
         flipped = self.beach_image.GetBitmap().ConvertToImage()
         flipped = flipped.Mirror(horizontally=False)
         self.beach_image.SetBitmap(wx.Bitmap(flipped))
-        return None
 
     
     def on_ignore(self, event):
         print("Ignoring image.")
         self.show_next_image()
-        return None
 
     
     def on_litter(self, event):
         print("Classify as litter.")
         self.classifications.append([self.unclassified_files[0], 1])
         self.show_next_image()
-        return None
 
 
     def on_not_litter(self, event):
         print("Classify as not litter.")
         self.classifications.append([self.unclassified_files[0], 0])
         self.show_next_image()
-        return None        
 
     
     def on_save_and_quit(self, event):
